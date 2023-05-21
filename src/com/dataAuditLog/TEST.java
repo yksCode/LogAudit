@@ -10,15 +10,15 @@ public class TEST {
             logSgn.signBySM2("{action:insert}\n" +
                             "{data:{hello world}\n" +
                             "{time:2023-5-13 17:31}",
-                    "yks",1);
+                    "yks");
             logSgn.signBySM2("{action:insert}\n" +
                             "{data:{hello world}\n" +
                             "{time:2023-5-13 17:31}",
-                    "yks",1);
+                    "yks");
             logSgn.signBySM2("{action:insert}\n" +
                             "{data:{hello world}\n" +
                             "{time:2023-5-13 17:31}",
-                    "yks",1);
+                    "yks");
             logSgn.getHchain().getUHC("yks").printInfo();
         } catch (Exception e) {
             e.printStackTrace();
