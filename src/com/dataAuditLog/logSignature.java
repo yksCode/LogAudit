@@ -34,7 +34,7 @@ public class logSignature {
         addUserAccessRecord(id,digitalSignature);
     }
 
-    public void signBySM2(String log,String id,int select){
+    public void signBySM2(String log,String id){
         try {
             Sm2CryptTools sm2CryptTools= new Sm2CryptTools();
             KeyPair keyPair = sm2CryptTools.mKeyPair;
