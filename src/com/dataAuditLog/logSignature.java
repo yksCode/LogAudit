@@ -13,7 +13,7 @@ public class logSignature {
         hchain = new hashChain();
     }
 
-    public void sign(String log,String id) throws Exception {
+    public void signByECDSA(String log,String id) throws Exception {
         // 生成ECDSA密钥对
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC");
         keyPairGenerator.initialize(new ECGenParameterSpec("secp256r1"));
@@ -31,13 +31,25 @@ public class logSignature {
         this.signature.initSign(privateKey);
         this.signature.update(log.getBytes());
         byte[] digitalSignature = signature.sign();
-
         addUserAccessRecord(id,digitalSignature);
-
-
     }
 
-    public boolean verify(byte[] sgn) throws Exception {
+    public void signBySM2(String log,String id,int select){
+        try {
+            Sm2CryptTools sm2CryptTools= new Sm2CryptTools();
+            KeyPair keyPair = sm2CryptTools.mKeyPair;
+
+//            System.out.println("原始明文：" + log);
+            byte[] digitalSignature = sm2CryptTools.encrypt(keyPair.getPublic(),log).getBytes();
+//            System.out.println("SM2加密后密文：" + digitalSignature);
+
+            addUserAccessRecord(id,digitalSignature);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean verifySgn(byte[] sgn) throws Exception {
         // 使用公钥进行验证
         signature.initVerify(publicKey);
         boolean isValid = signature.verify(sgn);
@@ -53,7 +65,7 @@ public class logSignature {
         return previousSgn;
     }
 
-    private void addUserAccessRecord(String id, byte[] sgn) {
+    public void addUserAccessRecord(String id, byte[] sgn) {
         //如果签名链中已经存在这个用户，则直接更新此用户的数字签名
         if(hchain.isContainUser(id)){
             hchain.updateChain(id,sgn);
