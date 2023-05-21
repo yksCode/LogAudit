@@ -90,7 +90,6 @@ public class logSignature {
 //        }
 //        return sha256(sb.toString());
 //    }
-
 }
 
 
