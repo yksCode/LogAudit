@@ -14,9 +14,10 @@ public class hashChain {
         TotalChain.put(userId,uhc);
     }
 
-    public void updateChain(String userId,byte[] sgn){
+    public void updateChain(String userId,String sgn,String log){
         userHashChain tmp = TotalChain.get(userId);
         tmp.setHashChain(sgn);
+        tmp.setLogChain(log);
         TotalChain.put(userId,tmp);
     }
 
