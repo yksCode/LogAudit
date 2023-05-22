@@ -51,7 +51,9 @@ addUserAccessRecord("yks",sgn);
 //查看用户id为“yks”的数字签名链
 logSgn.getHchain().getUHC("yks").printInfo();
 
-//验证签名
-logSgn.veritySgn(sgn);
+/*param:String类型用户id
+*return:boolean类型，true表示用户数字签名链的真实性和完整性没有被破坏
+*/
+logSgn.verifySM2Sgn("yks");
 ```
 
