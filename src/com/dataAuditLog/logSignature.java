@@ -9,10 +9,12 @@ public class logSignature {
     private PrivateKey privateKey;
     private PublicKey publicKey;
     private Signature signature;
-    public logSignature(){
+    private String DecLog;
+    public logSignature() throws Exception {
         hchain = new hashChain();
     }
-
+    private Sm2CryptTools sm2CryptTools= new Sm2CryptTools();
+    private KeyPair  keyPair = sm2CryptTools.mKeyPair;
     public void signByECDSA(String log,String id) throws Exception {
         // 生成ECDSA密钥对
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC");
@@ -30,50 +32,46 @@ public class logSignature {
         this.signature = Signature.getInstance("SHA256withECDSA");
         this.signature.initSign(privateKey);
         this.signature.update(log.getBytes());
-        byte[] digitalSignature = signature.sign();
-        addUserAccessRecord(id,digitalSignature);
+        String digitalSignature = signature.sign().toString();
+        addUserAccessRecord(id,digitalSignature,log);
     }
 
     public void signBySM2(String log,String id){
         try {
-            Sm2CryptTools sm2CryptTools= new Sm2CryptTools();
-            KeyPair keyPair = sm2CryptTools.mKeyPair;
-
-//            System.out.println("原始明文：" + log);
-            byte[] digitalSignature = sm2CryptTools.encrypt(keyPair.getPublic(),log).getBytes();
-//            System.out.println("SM2加密后密文：" + digitalSignature);
-
-            addUserAccessRecord(id,digitalSignature);
+            String digitalSignature = sm2CryptTools.encrypt(keyPair.getPublic(),log);
+            //DecLog用于接下来的验证
+            DecLog              = sm2CryptTools.decrypt(keyPair.getPrivate(),digitalSignature);
+            //添加到用户数字签名链
+            addUserAccessRecord(id,digitalSignature,log);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public boolean verifySgn(byte[] sgn) throws Exception {
-        // 使用公钥进行验证
-        signature.initVerify(publicKey);
-        boolean isValid = signature.verify(sgn);
-        return isValid;
+    public boolean verifySM2Sgn(String id){
+        return hchain.getUHC("yks").getLastLog().equals(DecLog);
     }
+
 
     private String getPreviousSignature(String userId) {
         String previousSgn = "";
         //StringBuilder sb = new StringBuilder();
-        for (byte[] signature : hchain.getUHC(userId).getHashChain()) {
+        for (String signature : hchain.getUHC(userId).getHashChain()) {
             previousSgn += signature.toString();
         }
         return previousSgn;
     }
 
-    public void addUserAccessRecord(String id, byte[] sgn) {
+    public void addUserAccessRecord(String id, String sgn,String log) {
         //如果签名链中已经存在这个用户，则直接更新此用户的数字签名
         if(hchain.isContainUser(id)){
-            hchain.updateChain(id,sgn);
+            hchain.updateChain(id,sgn,log);
         }
         //如果没有，则创建一个用户数字签名链对象
         else{
             userHashChain uhc = new userHashChain(id);
             uhc.setHashChain(sgn);
+            uhc.setLogChain(log);
             hchain.addChain(id,uhc);
         }
     }
